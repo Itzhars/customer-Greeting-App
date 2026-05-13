@@ -4,6 +4,7 @@ import { GreetingTemplate } from "@/types";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useMounted } from "@/lib/hooks/useMounted";
+import { RefObject } from "react";
 
 interface GreetingOverlayProps {
   template: GreetingTemplate;
@@ -11,6 +12,7 @@ interface GreetingOverlayProps {
   avatarUrl: string | null;
   isThumbnail?: boolean; // If true, scales down for the grid view
   customMessage?: string;
+  constraintsRef?: RefObject<HTMLDivElement | null>;
 }
 
 export function GreetingOverlay({ 
@@ -18,7 +20,8 @@ export function GreetingOverlay({
   username, 
   avatarUrl, 
   isThumbnail = false,
-  customMessage
+  customMessage,
+  constraintsRef
 }: GreetingOverlayProps) {
   const mounted = useMounted();
   
@@ -55,7 +58,14 @@ export function GreetingOverlay({
         <motion.div 
           initial={false}
           animate={{ scale: isThumbnail ? 0.6 : 1 }}
-          className="text-center space-y-1 drop-shadow-2xl"
+          drag={!isThumbnail}
+          dragConstraints={constraintsRef}
+          dragElastic={0.1}
+          whileDrag={{ scale: 1.1, cursor: "grabbing" }}
+          className={cn(
+            "text-center space-y-1 drop-shadow-2xl",
+            !isThumbnail && "pointer-events-auto cursor-grab active:cursor-grabbing"
+          )}
         >
           <p className={cn(
             "font-bold uppercase tracking-widest text-white/50",
@@ -82,18 +92,25 @@ export function GreetingOverlay({
 
       {/* Dynamic Profile Overlay */}
       {template.profilePosition !== "none" && displayAvatar && (
-        <div className={cn(
-          "absolute overflow-hidden rounded-full border-2 border-white/80 shadow-2xl transition-all duration-500",
-          isThumbnail ? "h-10 w-10" : "h-20 w-20 md:h-24 md:w-24",
-          profilePosClasses[template.profilePosition as keyof typeof profilePosClasses]
-        )}>
+        <motion.div 
+          drag={!isThumbnail}
+          dragConstraints={constraintsRef}
+          dragElastic={0.1}
+          whileDrag={{ scale: 1.1, cursor: "grabbing" }}
+          className={cn(
+            "absolute overflow-hidden rounded-full border-2 border-white/80 shadow-2xl transition-all duration-500",
+            isThumbnail ? "h-10 w-10" : "h-20 w-20 md:h-24 md:w-24 pointer-events-auto cursor-grab active:cursor-grabbing",
+            profilePosClasses[template.profilePosition as keyof typeof profilePosClasses]
+          )}
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img 
             src={displayAvatar} 
             alt={`${displayUsername}'s profile picture`} 
             className="h-full w-full object-cover" 
+            draggable={false}
           />
-        </div>
+        </motion.div>
       )}
 
       {/* Brand Watermark for exports */}
@@ -105,3 +122,4 @@ export function GreetingOverlay({
     </div>
   );
 }
+

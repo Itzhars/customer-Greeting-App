@@ -4,6 +4,7 @@ import { GreetingTemplate, UserInput } from "@/types";
 import { cn } from "@/lib/utils";
 import { GreetingOverlay } from "./GreetingOverlay";
 import { useStore } from "@/store/useStore";
+import { useRef } from "react";
 
 interface GreetingCanvasProps {
   id: string;
@@ -13,6 +14,7 @@ interface GreetingCanvasProps {
 
 export function GreetingCanvas({ id, template, userInput }: GreetingCanvasProps) {
   const { avatarUrl } = useStore();
+  const constraintsRef = useRef(null);
   
   const isBirthday = template.category === "Birthday";
   const isAnniversary = template.category === "Anniversary";
@@ -23,8 +25,9 @@ export function GreetingCanvas({ id, template, userInput }: GreetingCanvasProps)
   return (
     <div
       id={id}
+      ref={constraintsRef}
       className={cn(
-        "aspect-[4/5] w-full relative overflow-hidden flex flex-col",
+        "aspect-[4/5] w-full relative overflow-hidden flex flex-col select-none",
         isBirthday && "bg-gradient-to-br from-yellow-100 to-orange-200",
         isAnniversary && "bg-gradient-to-br from-rose-100 to-pink-200",
         isWedding && "bg-gradient-to-br from-slate-50 to-indigo-100",
@@ -39,7 +42,7 @@ export function GreetingCanvas({ id, template, userInput }: GreetingCanvasProps)
         <img 
           src={template.thumbnailUrl} 
           alt={template.name} 
-          className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay"
+          className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay pointer-events-none"
         />
       )}
 
@@ -55,7 +58,9 @@ export function GreetingCanvas({ id, template, userInput }: GreetingCanvasProps)
         username={userInput.recipientName || "Recipient"}
         avatarUrl={avatarUrl}
         customMessage={userInput.message}
+        constraintsRef={constraintsRef}
       />
     </div>
   );
 }
+

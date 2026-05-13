@@ -3,11 +3,12 @@
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { templates } from "@/data/templates";
 import { GreetingTemplate, UserInput } from "@/types";
 import { GreetingCanvas } from "@/components/editor/GreetingCanvas";
 import { EditorForm } from "@/components/editor/EditorForm";
 import { ExportTools } from "@/components/editor/ExportTools";
+import { templateService } from "@/lib/services/templateService";
+
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -26,23 +27,29 @@ export default function EditorPage() {
   });
 
   useEffect(() => {
-    const found = templates.find((t) => t.id === templateId);
-    if (!found) {
-      toast.error("Template not found");
-      router.push("/");
-      return;
-    }
+    const fetchTemplate = async () => {
+      const found = await templateService.getTemplateById(templateId as string);
+      
+      if (!found) {
+        toast.error("Template not found");
+        router.push("/");
+        return;
+      }
 
-    if (found.premium && !isPremium) {
-      toast.error("Premium Access Required", {
-        description: "Please upgrade to use this exclusive template.",
-      });
-      router.push("/");
-      return;
-    }
+      if (found.premium && !isPremium) {
+        toast.error("Premium Access Required", {
+          description: "Please upgrade to use this exclusive template.",
+        });
+        router.push("/");
+        return;
+      }
 
-    setTemplate(found);
+      setTemplate(found);
+    };
+
+    fetchTemplate();
   }, [templateId, isPremium, router]);
+
 
   if (!template) {
     return (

@@ -9,12 +9,13 @@ import { SectionHeader } from "@/components/layout/SectionHeader";
 import { TemplateSkeleton } from "@/components/ui/TemplateSkeleton";
 import { PremiumModal } from "@/components/ui/PremiumModal";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { templates } from "@/data/templates";
 import { GreetingTemplate } from "@/types";
 import { useRouter } from "next/navigation";
-import { TrendingUp, Grid, Sparkles, Star } from "lucide-react";
+import { TrendingUp, Grid, Sparkles, Star, Database } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { Button } from "@/components/ui/button";
+import { templateService } from "@/lib/services/templateService";
+import { toast } from "sonner";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -41,17 +42,16 @@ const itemVariants = {
 
 export default function Home() {
   const router = useRouter();
-  const { isPremium } = useStore();
+  const { isPremium, templates, isLoadingTemplates, fetchTemplates } = useStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
-  const [isLoading, setIsLoading] = useState(true);
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
+  const [isSeeding, setIsSeeding] = useState(false);
 
-  // Simulate initial loading for premium feel
+  // Fetch templates on mount
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+    fetchTemplates();
+  }, [fetchTemplates]);
 
   const handleTemplateSelect = (template: GreetingTemplate) => {
     if (template.premium && !isPremium) {
@@ -59,6 +59,18 @@ export default function Home() {
       return;
     }
     router.push(`/create/${template.id}`);
+  };
+
+  const handleSeedData = async () => {
+    setIsSeeding(true);
+    const success = await templateService.seedTemplates();
+    if (success) {
+      toast.success("Templates migrated to Firestore!");
+      fetchTemplates();
+    } else {
+      toast.error("Migration failed. Check console.");
+    }
+    setIsSeeding(false);
   };
 
   const filteredTemplates = useMemo(() => {
@@ -69,11 +81,11 @@ export default function Home() {
       const matchesCategory = activeCategory === "All" || t.category === activeCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, activeCategory]);
+  }, [searchQuery, activeCategory, templates]);
 
   const trendingTemplates = useMemo(() => {
     return templates.filter(t => t.premium).slice(0, 4);
-  }, []);
+  }, [templates]);
 
   return (
     <div className="flex flex-col gap-12 px-4 py-12 md:px-8 md:py-20 mesh-gradient min-h-screen">
@@ -128,6 +140,25 @@ export default function Home() {
         >
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
         </motion.div>
+
+        {/* Development Seed Button */}
+        {process.env.NODE_ENV === "development" && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-8"
+          >
+            <Button 
+              variant="outline" 
+              onClick={handleSeedData}
+              disabled={isSeeding}
+              className="rounded-full border-dashed border-primary/50 text-primary hover:bg-primary/5"
+            >
+              <Database className="mr-2 h-4 w-4" />
+              {isSeeding ? "Migrating Data..." : "Seed Firestore (Dev Only)"}
+            </Button>
+          </motion.div>
+        )}
       </section>
 
       {/* Category Section */}
@@ -140,7 +171,7 @@ export default function Home() {
         <CategoryChips active={activeCategory} onSelect={setActiveCategory} />
       </motion.section>
 
-      {isLoading ? (
+      {isLoadingTemplates ? (
         <TemplateSkeleton />
       ) : (
         <>
@@ -274,3 +305,4 @@ export default function Home() {
     </div>
   );
 }
+
