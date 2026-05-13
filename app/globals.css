@@ -123,6 +123,28 @@
   }
 }
 
+  .mesh-gradient-dark {
+    @apply bg-slate-950;
+    background-image: 
+      radial-gradient(at 0% 0%, oklch(0.55 0.25 260 / 0.1) 0, transparent 50%),
+      radial-gradient(at 100% 100%, oklch(0.6 0.2 300 / 0.1) 0, transparent 50%),
+      radial-gradient(at 50% 50%, oklch(0.7 0.2 240 / 0.05) 0, transparent 50%);
+  }
+
+  .glow-pulse {
+    @apply relative;
+  }
+  
+  .glow-pulse::before {
+    content: "";
+    @apply absolute -inset-1 bg-gradient-to-r from-primary/30 to-indigo-500/30 rounded-[inherit] blur-2xl opacity-0 transition-opacity duration-1000;
+  }
+
+  .glow-pulse:hover::before {
+    @apply opacity-100;
+  }
+}
+
 @keyframes float {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
@@ -141,3 +163,4 @@
 .animate-spin-slow {
   animation: spin-slow 20s linear infinite;
 }
+

@@ -44,10 +44,13 @@ export function ExportTools({ canvasId, fileName }: ExportToolsProps) {
     try {
       setIsCreatingLink(true);
       const file = await captureGreetingAsFile(canvasId, fileName);
-      const url = await storageService.uploadGreeting(file, fileName);
-      setShareUrl(url);
+      const storageUrl = await storageService.uploadGreeting(file, fileName);
+      const baseUrl = window.location.origin;
+      const finalShareUrl = `${baseUrl}/v/view?url=${encodeURIComponent(storageUrl)}`;
+      setShareUrl(finalShareUrl);
       setIsShareModalOpen(true);
       toast.success("Share link created successfully!");
+
     } catch (error: unknown) {
       toast.error((error as Error).message || "Failed to create share link");
     } finally {

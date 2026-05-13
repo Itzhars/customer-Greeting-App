@@ -14,11 +14,11 @@ import {
   Copy, 
   Check, 
   Share2, 
-  Twitter, 
-  Facebook, 
+  Send, 
   MessageCircle,
   ExternalLink
 } from "lucide-react";
+
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -79,9 +79,10 @@ export function ShareModal({ isOpen, onClose, shareUrl }: ShareModalProps) {
             onClick={shareToTwitter}
             className="flex flex-col h-20 gap-2 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white"
           >
-            <Twitter className="h-6 w-6 text-sky-400" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Twitter</span>
+            <Send className="h-6 w-6 text-sky-400" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Twitter / X</span>
           </Button>
+
           <Button 
             variant="outline" 
             onClick={shareToWhatsApp}

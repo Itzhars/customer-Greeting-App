@@ -59,7 +59,23 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 1. Create a project in the [Firebase Console](https://console.firebase.google.com/).
 2. Enable **Authentication** (Google, Email/Password, and Anonymous).
 3. Register a Web App to get your API keys.
-4. (Optional) Enable **Firestore** if you plan to migrate static templates to the cloud.
+4. Enable **Firestore** for dynamic template management.
+5. Enable **Firebase Storage** and update the rules to allow public read for shared greetings:
+   ```js
+   rules_version = '2';
+   service firebase.storage {
+     match /b/{bucket}/o {
+       match /greetings/{allPaths=**} {
+         allow read: if true;
+         allow write: if request.auth != null;
+       }
+       match /{allPaths=**} {
+         allow read, write: if request.auth != null;
+       }
+     }
+   }
+   ```
+
 
 ---
 
